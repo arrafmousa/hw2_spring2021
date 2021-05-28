@@ -396,7 +396,23 @@ def diskTotalRAM(diskID: int) -> int:
 
 
 def getCostForPurpose(purpose: str) -> int:
-
+    try:
+        sql_query = sql.SQL(f"SELECT SUM(size*costbybyte) "
+                            f"FROM ("
+                                f"SELECT disk.costbybyte , query.size"
+                                f"FROM ("
+                                    f"SELECT inner_size, disk.costbybyte AS outer_cost "
+                                    f"FROM "
+                                    f"("
+                                    f"SELECT runson.diskid AS inner_diskid, query.size AS inner_size"
+                                    f"query INNER JOIN runson ON query.id = runson.queryid "
+                                    f"WHERE query.purpose = {purpose}"
+                                    f")"
+                                    f"INNER JOIN disk ON disk.id = inner_diskid"
+                                f") "
+                            f") "
+                            )
+    return 0
 
 
 def getQueriesCanBeAddedToDisk(diskID: int) -> List[int]:
