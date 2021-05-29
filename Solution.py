@@ -396,23 +396,26 @@ def diskTotalRAM(diskID: int) -> int:
 
 
 def getCostForPurpose(purpose: str) -> int:
+    result = None
     try:
-        sql_query = sql.SQL(f"SELECT SUM(size*costbybyte) "
+        sql_query = sql.SQL(f"SELECT SUM(outer_cost*inner_size) "
                             f"FROM ("
-                                f"SELECT disk.costbybyte , query.size"
-                                f"FROM ("
-                                    f"SELECT inner_size, disk.costbybyte AS outer_cost "
-                                    f"FROM "
-                                    f"("
-                                    f"SELECT runson.diskid AS inner_diskid, query.size AS inner_size"
-                                    f"query INNER JOIN runson ON query.id = runson.queryid "
-                                    f"WHERE query.purpose = {purpose}"
-                                    f")"
-                                    f"INNER JOIN disk ON disk.id = inner_diskid"
-                                f") "
-                            f") "
+                                f"SELECT inner_size, disk.costbybyte AS outer_cost "
+                                f"FROM "
+                                f"("
+                                f"SELECT runson.diskid AS inner_diskid, query.size AS inner_size "
+                                f"FROM query INNER JOIN runson ON query.id = runson.queryid "
+                                f"WHERE query.purpose = '{purpose}'"
+                                f") AS query_purrpose_and_runs"
+                                f"INNER JOIN disk ON disk.id = inner_diskid "
+                            f") AS outer_calc; "
                             )
-    return 0
+        _,result = dbConnection().execute(sql_query)
+    except Exception as e:
+        print(e)
+        return -1
+
+    return result
 
 
 def getQueriesCanBeAddedToDisk(diskID: int) -> List[int]:
@@ -476,7 +479,9 @@ def getCloseQueries(queryID: int) -> List[int]:
 # print(removeRAMFromDisk(1,999))
 # print(removeRAMFromDisk(1,1))
 
-print(addRAMToDisk(1, 2))
-print(addRAMToDisk(3, 2))
+# print(addRAMToDisk(1, 2))
+# print(addRAMToDisk(3, 2))
+#
+# print(diskTotalRAM(2))
 
-print(diskTotalRAM(2))
+print(getCostForPurpose('c'))
