@@ -84,7 +84,6 @@ def createRAMTable():
                         "id INTEGER PRIMARY KEY,"
                         "ramSize INTEGER NOT NULL,"
                         "company TEXT NOT NULL,"
-                        "DiskId INT REFERENCES disk(id) ON DELETE CASCADE,"
                         "CHECK (ramSize > 0),"
                         "CHECK (id > 0) "
                         ")")
@@ -573,7 +572,7 @@ def mostAvailableDisks() -> List[int]:
             f"ORDER BY n_queries DESC,dspeed DESC, did; "
                             )
         rows, results = dbConnection().execute(sql_query)
-        return [results[i]['id'] for i in range(results.size())]
+        return [i[0] for i in results.rows]
     except Exception as e:
         dbConnection().rollback()
         return []
